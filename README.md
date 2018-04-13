@@ -19,13 +19,13 @@ bower install
 
 ## Process
 
-- [ ] build a `overlay image` demo
-- [ ] add map image into `assets`
-- [ ] fix the `bound` setting
-- [ ] convert old town data from xml to json
-- [ ] convert old town `chinese` name data to json
-- [ ] convert old town `english` name data to json
-- [ ] show the town marker on the map
+- [x] build a `overlay image` demo
+- [x] add map image into `assets`
+- [x] fix the `bound` setting
+- [x] convert old town data from xml to json
+- [x] convert old town `chinese` name data to json
+- [x] convert old town `english` name data to json
+- [x] show the town marker on the map
 - [ ] toggle layer function (Town, NPC, SPC)
 - [ ] toggle all marker (Town, NPC, SPC)
 - [ ] language switch (Chinese, English)

@@ -2,9 +2,254 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Great Marchent Map</title>
+    <title>GMap - Map of the Great Merchant</title>
 </head>
-<body>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="lib/bower_components/leaflet/dist/leaflet.css"/>
+<style>
+    html,
+    body,
+    #map {
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+        z-index: 1;
+    }
+
+    #panel {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        margin-left: -150px;
+        z-index: 2;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+    }
+
+    #inputArea {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        z-index: 2;
+        background-color: #fff;
+        padding: 5px;
+        border: 2px solid #999;
+    }
+
+    #searchResultDiv {
+        -moz-appearance: textfield-multiline;
+        -webkit-appearance: textarea;
+        border: 1px solid gray;
+        /*font: medium -moz-fixed;*/
+        /*font: -webkit-small-control;*/
+        height: 100px;
+        overflow: auto;
+        padding: 2px;
+        resize: both;
+        width: 400px;
+    }
+
+    /*body {*/
+    /*font-family: sans-serif;*/
+    /*font-size: 1em;*/
+    /*color: #333;*/
+    /*background-color: #ddd;*/
+    /*}*/
+
+    label {
+        clear: both;
+        display: block;
+        font-size: 0.85em;
+        font-weight: bold;
+        padding: 0.8em 0 0.2em 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    input, button {
+        float: left;
+        font-size: 1em;
+        padding: 3px 6px;
+        margin: 0;
+        border: 1px solid #333;
+        outline: 0;
+        box-shadow: none;
+    }
+
+    ::-moz-focus-inner {
+        padding: 0;
+        border: 0;
+    }
+
+    input {
+        width: 4em;
+        background-color: #fff;
+        /*border-right: 0 none;*/
+        border-radius: 3px 3px 3px 3px;
+    }
+
+    button {
+        width: 3em;
+        position: relative;
+        background-color: #aaa;
+        border-radius: 3px 3px 3px 3px;
+        cursor: pointer;
+    }
+
+    .copied::after {
+        position: absolute;
+        top: 12%;
+        right: 110%;
+        display: block;
+        content: "copied";
+        font-size: 0.75em;
+        padding: 2px 3px;
+        color: #fff;
+        background-color: #22a;
+        border-radius: 3px;
+        opacity: 0;
+        will-change: opacity, transform;
+        -webkit-animation: showcopied 1.5s ease;
+        animation: showcopied 1.5s ease;
+    }
+
+    @-webkit-keyframes showcopied {
+        0% {
+            opacity: 0;
+            -webkit-transform: translateX(100%);
+            transform: translateX(100%);
+        }
+        70% {
+            opacity: 1;
+            -webkit-transform: translateX(0);
+            transform: translateX(0);
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+
+    @keyframes showcopied {
+        0% {
+            opacity: 0;
+            -webkit-transform: translateX(100%);
+            transform: translateX(100%);
+        }
+        70% {
+            opacity: 1;
+            -webkit-transform: translateX(0);
+            transform: translateX(0);
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+
+    a:link {
+        color: #333;
+        background-color: transparent;
+        text-decoration: none
+    }
+
+    a:visited {
+        color: #333;
+        background-color: transparent;
+        text-decoration: none
+    }
+
+    a:hover {
+        color: #333;
+        background-color: transparent;
+        text-decoration: none
+    }
+
+    a:active {
+        color: #333;
+        background-color: transparent;
+        text-decoration: none
+    }
+</style>
+
+<body onclick="chooseSuggestStat=false;" onkeyup="if(event.keyCode!=38||event.keyCode!=40){chooseSuggestStat=false;}">
+
+<div id="panel">
+    <input onclick="toggleMarkerVis();" value="Marker" type=button>
+    <input onclick="LngChange();" value="Lng" type=button>
+    <input onclick="toggleLayer('TOWN');" value="Town" type=button>
+    <input onclick="toggleLayer('SPC');" value="SPC" type=button>
+    <input onclick="toggleLayer('NPC');" value="NPC" type=button>
+    <a href="?mobile=true" id="modeLink">Tablet</a>
+</div>
+<div id="map"></div>
+<div id="inputArea">
+    <input type="text" id="CHTname" style="font-size: 14px; " onkeypress="if(event.keyCode ==13){saveToLocal();}"
+           onkeyup="findArray();"
+           onkeydown="if(event.keyCode==39||event.keyCode==37){changeCurrMrk(event);}else if(event.keyCode==38||event.keyCode==40){changeSuggest(event);}"
+           placeholder="Chinese..."
+    >
+    <input type="text" id="ENGname" style="font-size: 14px; " onkeypress="if(event.keyCode ==13){saveToLocal();}"
+           onkeyup="findENGArray();"
+           onkeydown="if(event.keyCode==39||event.keyCode==37){changeCurrMrk(event);}else if(event.keyCode==38||event.keyCode==40){changeENGSuggest(event);}"
+           placeholder="English..."
+    >
+    <input type="text" id="searchInput" onkeyup="findArrayInLocalStorage();"
+           placeholder="Search..."
+    >
+    <br><br>
+    <input onclick="saveToLocal();" value="Save" type=button>
+    <input onclick="delMarker();" value="Del " type=button>
+    <span onclick="toggleEdit();">Edit</span><input onclick="toggleEdit();" type="checkbox" id="editCheck">
+    <br><br>
+    <div id="current">Nothing yet...</div>
+
+    <div id="searchResultDiv" style="font-size: 20px; width:50%;"></div>
+</div>
+
+<script src="lib/bower_components/leaflet/dist/leaflet.js"></script>
+<script src="lib/bower_components/jquery/dist/jquery.js"></script>
+<script src="assets/townCHT.js"></script>
+<script src="assets/townENG.js"></script>
+<script src="assets/townData.js"></script>
+
+<script>
+    var osm = L.tileLayer('', {maxZoom: 18, attribution: ''});
+    latlng = new L.LatLng(50.5, 30.51);
+    var map = new L.Map('map');
+    map.addLayer(osm);
+    var swBound = new L.LatLng(62.214, -150.491);
+    var neBound = new L.LatLng(62.400471, -150.005608);
+    var bounds = new L.LatLngBounds(swBound, neBound);
+    map.fitBounds(bounds);
+    var overlay = new L.ImageOverlay("assets/gmap/GM_MAP_TOWN_CHT.jpg", bounds, {
+        opacity: 1,
+        interactive: true,
+        attribution: '&copy; The Great Merchant.'
+    });
+    map.addLayer(overlay);
+
+    $(townData).each(function (index, element) {
+        var marker = L.marker([element.lat, element.lng]).addTo(map);
+    });
+
+    overlay.on('dblclick', function (e) {
+        console.log('Double click on image.');
+    });
+
+    var popup = L.popup();
+
+    function onMapClick(e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent("You clicked the map at " + e.latlng.toString())
+            .openOn(map);
+    }
+
+    map.on('click', onMapClick);
+
+</script>
 
 </body>
 </html>
