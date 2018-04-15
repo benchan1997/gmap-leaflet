@@ -1,7 +1,7 @@
 # GMap-leaflet
 
 Demo:
-[https://benchan1997.github.io/GMap-leaflet/](https://benchan1997.github.io/GMap-leaflet/)
+[https://benchan1997.github.io/gmap-leaflet/](https://benchan1997.github.io/gmap-leaflet/)
 
 GMap-leaflet is map for The Great Merchant (巨商). The old version is composed at Jan 2015 and based on Google's maps javascript api. Unfortunately, the api is changed and I want to port it to leaflet based.
 
